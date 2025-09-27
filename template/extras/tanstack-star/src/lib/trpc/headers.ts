@@ -1,11 +1,11 @@
-import { createServerFn } from "@tanstack/react-start"
-import { getHeaders } from "@tanstack/react-start/server"
+import { createServerFn } from '@tanstack/react-start'
+import { getRequestHeaders } from '@tanstack/react-start/server'
 
 export const getServerHeaders = createServerFn({
-  method: 'GET',
+	method: 'GET',
 }).handler(() => {
-  const headers = new Headers(getHeaders() as unknown as Headers)
-  headers.set('x-trpc-source', 'rsc')
+	const headers = new Headers(getRequestHeaders())
+	headers.set('x-trpc-source', 'rsc')
 
-  return Object.fromEntries(headers.entries())
+	return Object.fromEntries(headers.entries())
 })

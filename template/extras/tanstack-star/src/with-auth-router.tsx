@@ -6,7 +6,7 @@ import { getContext } from "~lib/trpc/context";
 import { TRPCProvider } from "~lib/trpc/react";
 import { routeTree } from "./routeTree.gen";
 
-export const createRouter = () => {
+export const getRouter = () => {
 	const context = getContext();
 	const router = createTanStackRouter({
 		routeTree,
@@ -27,9 +27,3 @@ export const createRouter = () => {
 	setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient });
 	return router;
 };
-
-declare module "@tanstack/react-router" {
-	interface Register {
-		router: ReturnType<typeof createRouter>;
-	}
-}

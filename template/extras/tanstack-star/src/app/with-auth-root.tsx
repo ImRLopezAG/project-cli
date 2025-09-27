@@ -10,20 +10,28 @@ import { createServerFn } from "@tanstack/react-start";
 import type { TRPCClient } from "@trpc/client";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { Loader } from "~components/loader";
-import { getServerSession } from "~server/auth";
 import type { AppRouter } from "~server/trpc/root";
 import appCss from "./index.css?url";
 
-const fetchAuth = createServerFn().handler(async () => {
-	const session = await getServerSession();
-	return session;
-});
+import { auth } from '~server/auth'
+import { getRequestHeaders } from '@tanstack/react-start/server'
+
+
+const fetchAuth = createServerFn({
+	method: 'GET',
+}).handler(async () => {
+	const session = await auth.api.getSession({
+		headers: new Headers(getRequestHeaders()),
+	})
+	return session
+})
+
 
 export interface RouterAppContext {
 	trpc: TRPCOptionsProxy<AppRouter>;
 	queryClient: QueryClient;
 	client: TRPCClient<AppRouter>;
-	auth: Awaited<ReturnType<typeof getServerSession>>;
+	auth: Awaited<ReturnType<typeof auth.api.getSession>>;
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({

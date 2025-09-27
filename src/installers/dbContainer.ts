@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { PKG_ROOT,CONFIG_ROOT } from "~/consts.js";
+import { CONFIG_ROOT } from "~/consts.js";
 import type { Installer } from "~/installers";
 import { parseNameAndPath } from "~/utils/parseNameAndPath";
 

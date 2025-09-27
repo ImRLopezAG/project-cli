@@ -6,18 +6,20 @@ import viteTsConfigPaths from 'vite-tsconfig-paths'
 
 const config = defineConfig({
 	plugins: [
-		// this is the plugin that enables path aliases
 		viteTsConfigPaths({
 			projects: ['./tsconfig.json'],
 		}),
 		tailwindcss(),
 		tanstackStart({
-			customViteReactPlugin: true,
-			tsr: {
-				routesDirectory: 'src/app',
+			router: {
+				routesDirectory: './app',
 			},
 		}),
-		viteReact(),
+		viteReact({
+			babel: {
+				// plugins: ['babel-plugin-react-compiler'],
+			},
+		}),
 	],
 })
 
