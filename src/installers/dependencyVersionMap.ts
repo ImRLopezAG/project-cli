@@ -36,5 +36,6 @@ export const dependencyVersionMap = {
 	"@as-integrations/next": "4.0.0",
 	graphql: "16.8.1",
 	"@graphql-tools/schema": "10.0.0",
+	'drizzle-graphql': '0.8.5',
 } as const;
 export type AvailableDependencies = keyof typeof dependencyVersionMap;

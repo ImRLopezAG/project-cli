@@ -10,6 +10,7 @@ export const graphqlInstaller: Installer = ({ projectDir, framework }) => {
 		"@as-integrations/next",
 		"graphql",
 		"@graphql-tools/schema",
+		'drizzle-graphql',
 	];
 
 	addPackageDependency({

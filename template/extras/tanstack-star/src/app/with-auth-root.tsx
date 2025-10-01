@@ -15,7 +15,7 @@ import appCss from "./index.css?url";
 
 import { auth } from '~server/auth'
 import { getRequestHeaders } from '@tanstack/react-start/server'
-
+import { serialize } from 'superjson'
 
 const fetchAuth = createServerFn({
 	method: 'GET',
@@ -23,7 +23,8 @@ const fetchAuth = createServerFn({
 	const session = await auth.api.getSession({
 		headers: new Headers(getRequestHeaders()),
 	})
-	return session
+	const s = serialize(session)
+	return s.json
 })
 
 
