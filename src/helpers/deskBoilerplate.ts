@@ -120,7 +120,6 @@ function createProvidersFile(config: ProviderConfig): string {
 		`import { Toaster } from "~ui/sonner";`,
 		`import type { PropsWithChildren } from "react";`,
 		`import { ThemeProvider } from "./theme";`,
-		`import { LocaleProvider } from './locale' \n import esES from './locale/i18n/es_ES.json'`
 	];
 
 	const wrappers: Array<{ open: string; close: string }> = [
