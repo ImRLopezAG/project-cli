@@ -10,6 +10,7 @@ import { initializeGit } from "~/helpers/git.js";
 import { logNextSteps } from "~/helpers/logNextSteps.js";
 import { setImportAlias } from "~/helpers/setImportAlias.js";
 import {
+	buildPkgInstallerMapDesktop,
 	buildPkgInstallerMapNext,
 	buildPkgInstallerMapTTS,
 } from "~/installers/index.js";
@@ -50,6 +51,7 @@ const main = async () => {
 	const usePackages = {
 		next: buildPkgInstallerMapNext(packages, databaseProvider),
 		'tanstack-star': buildPkgInstallerMapTTS(packages, databaseProvider),
+		desktop: buildPkgInstallerMapDesktop(packages, databaseProvider),
 	}[framework];
 
 	if (!usePackages) {

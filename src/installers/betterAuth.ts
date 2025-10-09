@@ -116,3 +116,53 @@ export const betterAuthInstallerTTS: Installer = ({
 		fs.copySync(authConfigSrc, authConfigDest);
 	}
 };
+
+export const betterAuthInstallerDesktop: Installer = ({
+	projectDir,
+	packages,
+	databaseProvider,
+	framework,
+}) => {
+	const usingDrizzle = packages?.drizzle.inUse;
+
+	const deps: AvailableDependencies[] = ["better-auth"];
+
+	addPackageDependency({
+		projectDir,
+		dependencies: deps,
+		devMode: false,
+	});
+
+	const extrasDir = extraDir(framework);
+
+	const API_HANDLER_FILE = "app/api/auth/$.ts";
+	const apiHandlerSrc = path.join(extrasDir, API_HANDLER_FILE);
+	const apiHandlerDest = path.join(projectDir, API_HANDLER_FILE.replace('app/', 'src/renderer/app/'));
+
+	// Copy the Better Auth API route
+	fs.copySync(apiHandlerSrc, apiHandlerDest);
+
+	const API_CLIENT_FILE = "lib/$auth/index.ts";
+	const apiClientSrc = path.join(extrasDir, API_CLIENT_FILE);
+	const apiClientDest = path.join(projectDir, API_CLIENT_FILE.replace('lib/', 'src/renderer/lib/'));
+
+	const AUTH_HOOKS_FILE = "hooks/use-auth.ts";
+	const authHooksSrc = path.join(extrasDir, AUTH_HOOKS_FILE);
+	const authHooksDest = path.join(projectDir, AUTH_HOOKS_FILE.replace('hooks/', 'src/renderer/hooks/'));
+
+	// Copy the Better Auth API client
+	fs.copySync(apiClientSrc, apiClientDest);
+	fs.copySync(authHooksSrc, authHooksDest);
+
+	if (usingDrizzle) {
+		const API_CONFIG_FILE = `server/auth/${PROVIDERS_NAME[databaseProvider]}-index.ts`;
+
+		const authConfigSrc = path.join(extrasDir, API_CONFIG_FILE);
+		const authConfigDest = path.join(projectDir, "src/renderer/server/auth/index.ts");
+
+		// Ensure the directory exists
+		fs.ensureDirSync(path.dirname(authConfigDest));
+		fs.copySync(authConfigSrc, authConfigDest);
+	}
+};
+

@@ -37,5 +37,9 @@ export const dependencyVersionMap = {
 	graphql: "16.8.1",
 	"@graphql-tools/schema": "10.0.0",
 	'drizzle-graphql': '0.8.5',
+
+	// i18n
+	"@nkzw/babel-preset-fbtee": "^1.6.0",
+	"fbtee": "^1.6.0",
 } as const;
 export type AvailableDependencies = keyof typeof dependencyVersionMap;

@@ -119,6 +119,110 @@ export const drizzleInstaller: Installer = ({
 	// Create empty env file to hydrate
 	fs.appendFileSync(envDest, envContent);
 }
+export const drizzleInstallerDesktop: Installer = ({
+	projectDir,
+	packages,
+	scopedAppName,
+	databaseProvider,
+	framework,
+	projectName
+}) => {
+	addPackageDependency({
+		projectDir,
+		dependencies: ["drizzle-kit"],
+		devMode: true,
+	});
+	addPackageDependency({
+		projectDir,
+		dependencies: [
+			"drizzle-orm",
+			(
+				{
+					postgres: "postgres",
+					sqlite: "@libsql/client",
+				} as const
+			)[databaseProvider],
+		],
+		devMode: false,
+	});
+
+	const extrasDir = extraDir(framework);
+
+	const configFile = path.join(
+		CONFIG_ROOT,
+		`config/drizzle-config-${databaseProvider}.ts`,
+	);
+	const configDest = path.join(projectDir, DEST.CONFIG);
+
+	const ENTITIES_DIR = path.join(extrasDir, DEST.ENTITIES_DIR.replace('src/', ''));
+
+	if (packages?.["better-auth"]) {
+		switch (databaseProvider) {
+			case "postgres": {
+				const schemaFile = path.join(ENTITIES_DIR, `with-pg-schema.ts`);
+				const schemaDest = path.join(
+					projectDir,
+					DEST.SCHEMA.replace('server/', 'renderer/server/')
+				);
+				const authFile = path.join(ENTITIES_DIR, `with-pg-auth.ts`);
+				const authDest = path.join(
+					projectDir,
+					DEST.AUTH.replace('server/', 'renderer/server/')
+				);
+				const ENV_CONTENT = `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/${projectName}`
+				const envPath = path.join(projectDir, ".env");
+
+				if (!fs.existsSync(envPath)) {
+					fs.writeFileSync(envPath, ENV_CONTENT);
+				}
+
+				fs.copySync(schemaFile, schemaDest);
+				fs.copySync(authFile, authDest);
+				break;
+			}
+			case "sqlite": {
+				const authFile = path.join(ENTITIES_DIR, `with-sqlite-auth.ts`);
+				const authDest = path.join(
+					projectDir,
+					DEST.AUTH.replace('server/', 'renderer/server/')
+				);
+				fs.copySync(authFile, authDest);
+				break;
+			}
+		}
+	}
+	const schemaFile = path.join(ENTITIES_DIR, `index.ts`);
+	const schemaDest = path.join(projectDir, DEST.INDEX.replace('server/', 'renderer/server/'));
+	const CLIENT_FILE = `server/db/${PROVIDERS_NAME[databaseProvider]}-index.ts`;
+
+	const clientSrc = path.join(extrasDir, CLIENT_FILE);
+	const clientDest = path.join(projectDir, DEST.CLIENT.replace('server/', 'renderer/server/'));
+
+	addPackageScript({
+		projectDir,
+		scripts: {
+			"db:push": "drizzle-kit push",
+			"db:studio": "drizzle-kit studio",
+			"db:generate": "drizzle-kit generate",
+			"db:migrate": "drizzle-kit migrate",
+		},
+	});
+
+	fs.copySync(configFile, configDest);
+	fs.mkdirSync(path.dirname(schemaDest), { recursive: true });
+	fs.copySync(schemaFile, schemaDest);
+	fs.copySync(clientSrc, clientDest);
+
+	// ENV file
+	const envDest = path.join(projectDir, "src/renderer/lib/env.ts");
+	const dbName = scopedAppName.replace(/-/g, "_");
+	const envContent =
+		databaseProvider === "sqlite"
+			? SQLITE_ENV_CONTENT
+			: PG_ENV_CONTENT(dbName);
+	// Create empty env file to hydrate
+	fs.appendFileSync(envDest, envContent);
+}
 
 const PG_ENV_CONTENT = (db: string) => `
 import { z } from 'zod'

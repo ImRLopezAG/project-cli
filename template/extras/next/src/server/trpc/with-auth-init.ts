@@ -16,6 +16,7 @@ export async function createTRPCContext({ headers }: TrpcContext) {
 		db,
 		session,
 		auth,
+		headers
 	};
 }
 

@@ -37,3 +37,17 @@ export const tailwindInstallerTTS: Installer = ({ projectDir, framework }) => {
 
 	fs.copySync(cssSrc, cssDest);
 };
+export const tailwindInstallerDesktop: Installer = ({ projectDir, framework }) => {
+	addPackageDependency({
+		projectDir,
+		dependencies: ["tailwindcss", "@tailwindcss/vite"],
+		devMode: true,
+	});
+
+	const extrasDir = extraDir(framework);
+
+	const cssSrc = path.join(extrasDir, "app/index.css");
+	const cssDest = path.join(projectDir, "src/renderer/app/index.css");
+
+	fs.copySync(cssSrc, cssDest);
+};

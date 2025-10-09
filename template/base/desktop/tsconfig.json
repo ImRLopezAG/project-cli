@@ -1,0 +1,53 @@
+{
+	"extends": [
+		"@electron-toolkit/tsconfig/tsconfig.node.json",
+		"@electron-toolkit/tsconfig/tsconfig.web.json"
+	],
+	"include": [
+		"electron.vite.config.*",
+		"src/main/**/*",
+		"src/preload/**/*",
+		"src/renderer/**/*",
+		"src/shared/**/*",
+		"src/preload/*.d.ts"
+	],
+	"compilerOptions": {
+		/* Base Options: */
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"target": "es2024",
+		"allowJs": true,
+		"resolveJsonModule": true,
+		"moduleDetection": "force",
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+
+		/* Strictness */
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"checkJs": true,
+
+		/* Bundled projects */
+		"lib": ["dom", "dom.iterable", "ES2024"],
+		"noEmit": true,
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"jsx": "preserve",
+		"incremental": true,
+
+		"types": ["vite/client", "electron-vite/node"],
+
+		/* Path Aliases */
+		"baseUrl": ".",
+		"paths": {
+			"~/*": ["./src/renderer/*"],
+			"~lib/*": ["./src/renderer/lib/*"],
+			"~server/*": ["./src/renderer/server/*"],
+			"~components/*": ["./src/renderer/components/*"],
+			"~ui/*": ["./src/renderer/components/ui/*"],
+			"~hooks/*": ["./src/renderer/hooks/*"],
+			"~int/*": ["./src/main/*"]
+		}
+	},
+	"exclude": ["node_modules"]
+}

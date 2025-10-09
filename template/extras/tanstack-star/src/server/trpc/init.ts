@@ -10,6 +10,7 @@ interface TrpcContext {
 export async function createTRPCContext({ headers }: TrpcContext) {
 	return {
 		db,
+		headers
 	};
 }
 

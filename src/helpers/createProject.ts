@@ -16,6 +16,7 @@ import {
 } from "~/helpers/ttsBoilerplate";
 import type { DatabaseProvider, PkgInstallerMap } from "~/installers/index";
 import { getUserPkgManager } from "~/utils/getUserPkgManager";
+import { selectComponentFileRoutesDesktop, selectRouteFileDesktop, selectRouterFileDeskTop } from "./deskBoilerplate";
 
 interface CreateProjectOptions {
 	projectName: string;
@@ -79,6 +80,11 @@ export const createProject = async ({
 		selectRouterFile({ projectDir, packages, framework });
 		selectRouteFile({ projectDir, packages, framework });
 		selectComponentFileRoutes({ projectDir, packages, framework });
+	}
+	if (framework === "desktop") {
+		selectRouterFileDeskTop({ projectDir, packages, framework });
+		selectRouteFileDesktop({ projectDir, packages, framework });
+		selectComponentFileRoutesDesktop({ projectDir, packages, framework });
 	}
 
 	return projectDir;

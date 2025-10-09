@@ -45,7 +45,7 @@ interface CliResults {
 	appName: string;
 	packages: AvailablePackages[];
 	flags: CliFlags;
-		framework: string;
+	framework: string;
 	
 	databaseProvider: DatabaseProvider;
 }
@@ -215,6 +215,7 @@ Visit ${chalk.underline.blue("https://imrlopez.dev/")} for more information.
 						options: [
 							{ value: "next", label: "Next.js" },
 							{ value: "tanstack-star", label: "TanStack Star" },
+							{ value: "desktop", label: "Desktop (Electron + TTS)" }
 						],
 						initialValue: "next",
 					});
@@ -250,6 +251,19 @@ Visit ${chalk.underline.blue("https://imrlopez.dev/")} for more information.
 							] : [])
 						],
 						initialValue: "trpc",
+					});
+				},
+				i18n: ({results}) => {
+					if (results.framework === "next") {
+						return undefined;
+					}
+					return p.select({
+						message: "Would you like to include i18n support with fbtee?",
+						options: [
+							{ value: true, label: "Yes" },
+							{ value: false, label: "No" },
+						],
+						initialValue: true,
 					});
 				},
 				...(!cliResults.flags.noGit && {
@@ -300,6 +314,9 @@ Visit ${chalk.underline.blue("https://imrlopez.dev/")} for more information.
 		if (project.apiLayer === "graphql") packages.push("graphql");
 		if (project.apiLayer === "both") {
 			packages.push("trpc", "graphql");
+		}
+		if (project.i18n) {
+			packages.push("fbtee");
 		}
 
 		return {

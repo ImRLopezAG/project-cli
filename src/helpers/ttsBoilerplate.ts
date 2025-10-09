@@ -87,6 +87,7 @@ export const selectComponentFileRoutes = ({
 	const providersFileContent = createProvidersFile({
 		auth: packages?.["better-auth"]?.inUse ?? false,
 		trpc: packages?.trpc?.inUse ?? false,
+		i18n: packages?.fbtee?.inUse ?? false,
 	});
 	fs.writeFileSync(path.join(providersDest, "index.tsx"), providersFileContent);
 	fs.copySync(
@@ -107,6 +108,7 @@ export const selectComponentFileRoutes = ({
 interface ProviderConfig {
 	auth: boolean;
 	trpc: boolean;
+	i18n: boolean;
 }
 
 function createProvidersFile(config: ProviderConfig): string {
@@ -114,6 +116,7 @@ function createProvidersFile(config: ProviderConfig): string {
 		`import { Toaster } from "~ui/sonner";`,
 		`import type { PropsWithChildren } from "react";`,
 		`import { ThemeProvider } from "./theme";`,
+		`import { LocaleProvider } from './locale' \n import esES from './locale/i18n/es_ES.json'`
 	];
 
 	const wrappers: Array<{ open: string; close: string }> = [
@@ -123,7 +126,15 @@ function createProvidersFile(config: ProviderConfig): string {
 		},
 	];
 
-
+	if (config.i18n) {
+		imports.push(`import { LocaleProvider } from './locale' \n import esES from './locale/i18n/es_ES.json'`);
+		wrappers.splice(1, 0, {
+			open: `<LocaleProvider availableLanguages={availableLanguages}
+				loadLocale={loadLocale}
+				translations={{ en_US: {}, es_ES: esES.es_ES ?? {} }}>`,
+			close: `</LocaleProvider>`,
+		});
+	}
 
 	if (config.auth) {
 		imports.push(`import { AuthProvider } from "./auth";`);
@@ -133,6 +144,22 @@ function createProvidersFile(config: ProviderConfig): string {
 		});
 	}
 
+	const localeConfig = `
+	const availableLanguages = new Map([
+	['en_US', 'English'],
+	['es_ES', 'Español'],
+])
+
+const loadLocale = async (locale: string) => {
+	switch (locale) {
+		case 'es_ES':
+			return esES.es_ES ?? {}
+		default:
+			return {}
+	}
+}
+`;
+
 	const openTags = wrappers.map((w) => w.open).join("\n\t\t\t");
 	const closeTags = wrappers
 		.map((w) => w.close)
@@ -140,7 +167,7 @@ function createProvidersFile(config: ProviderConfig): string {
 		.join("\n\t\t\t");
 
 	return `${imports.join("\n")}
-
+${config.i18n ? localeConfig : ""}
 export function Providers({ children }: PropsWithChildren) {
 	return (
 		${openTags}

@@ -19,6 +19,7 @@ export const scaffoldProject = async ({
 	const srcDirMap = {
 		next: path.join(PKG_ROOT, "template/base/nextjs"),
 		'tanstack-star': path.join(PKG_ROOT, "template/base/tts"),
+		desktop: path.join(PKG_ROOT, "template/base/desktop"),
 	} as const;
 
 	const srcDir = srcDirMap[framework as keyof typeof srcDirMap];
