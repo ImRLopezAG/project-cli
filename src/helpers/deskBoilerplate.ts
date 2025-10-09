@@ -79,6 +79,10 @@ export const selectComponentFileRoutesDesktop = ({
 	const loaderComponentSrc = path.join(componentsDir, "loader.tsx");
 	const loaderComponentDest = path.join(projectDir, "src/renderer/components/loader.tsx");
 	fs.copySync(loaderComponentSrc, loaderComponentDest);
+	
+	const versionsComponentSrc = path.join(componentsDir, "versions.tsx");
+	const versionsComponentDest = path.join(projectDir, "src/renderer/components/versions.tsx");
+	fs.copySync(versionsComponentSrc, versionsComponentDest);
 
 	const providersDir = path.join(componentsDir, "providers");
 	const providersDest = path.join(projectDir, "src/renderer/components/providers");
