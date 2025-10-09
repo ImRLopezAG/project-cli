@@ -1,6 +1,6 @@
 {
   "name": "create-imr-app",
-  "version": "0.0.16",
+  "version": "0.0.18",
   "description": "Create web application with the imr stack",
   "license": "MIT",
   "repository": {
