@@ -1,18 +1,14 @@
 import {
-	betterAuthInstallerNext,
-	betterAuthInstallerTTS,
-	betterAuthInstallerDesktop
+	betterAuthInstaller
 } from '~/installers/betterAuth'
 import {
-	tailwindInstallerNext,
-	tailwindInstallerTTS,
-	tailwindInstallerDesktop,
+	tailwindInstaller
 } from '~/installers/tailwind'
-import { trpcInstallerNext, trpcInstallerTTS, trpcInstallerDesktop } from '~/installers/trpc'
+import { trpcInstaller } from '~/installers/trpc'
 import type { PackageManager } from '~/utils/getUserPkgManager'
 import { biomeInstaller } from './biome'
 import { dbContainerInstaller } from './dbContainer'
-import { drizzleInstaller, drizzleInstallerDesktop } from './drizzle'
+import { drizzleInstaller } from './drizzle'
 import { fbteeInstaller } from './fbtee'
 import { graphqlInstaller } from './graphql'
 // Turning this into a const allows the list to be iterated over for programmatically creating prompt options
@@ -42,6 +38,7 @@ export interface InstallerOptions {
 	scopedAppName: string
 	framework: string
 	databaseProvider: DatabaseProvider
+	pgLite: boolean
 }
 
 export type Installer = (opts: InstallerOptions) => void
@@ -54,7 +51,7 @@ export type PkgInstallerMap = Record<
 	}
 >
 
-export const buildPkgInstallerMapNext = (
+export const buildPkgInstaller = (
 	packages: AvailablePackages[],
 	databaseProvider: DatabaseProvider,
 ): PkgInstallerMap => ({
@@ -64,7 +61,7 @@ export const buildPkgInstallerMapNext = (
 	},
 	'better-auth': {
 		inUse: packages.includes('better-auth'),
-		installer: betterAuthInstallerNext,
+		installer: betterAuthInstaller,
 	},
 	drizzle: {
 		inUse: packages.includes('drizzle'),
@@ -72,87 +69,11 @@ export const buildPkgInstallerMapNext = (
 	},
 	tailwind: {
 		inUse: packages.includes('tailwind'),
-		installer: tailwindInstallerNext,
+		installer: tailwindInstaller,
 	},
 	trpc: {
 		inUse: packages.includes('trpc'),
-		installer: trpcInstallerNext,
-	},
-	dbContainer: {
-		inUse: ['postgres'].includes(databaseProvider),
-		installer: dbContainerInstaller,
-	},
-	biome: {
-		inUse: packages.includes('biome'),
-		installer: biomeInstaller,
-	},
-	graphql: {
-		inUse: packages.includes('graphql'),
-		installer: graphqlInstaller,
-	},
-})
-
-export const buildPkgInstallerMapTTS = (
-	packages: AvailablePackages[],
-	databaseProvider: DatabaseProvider,
-): PkgInstallerMap => ({
-	fbtee: {
-		inUse: packages.includes('fbtee'),
-		installer: fbteeInstaller,
-	},
-	'better-auth': {
-		inUse: packages.includes('better-auth'),
-		installer: betterAuthInstallerTTS,
-	},
-	drizzle: {
-		inUse: packages.includes('drizzle'),
-		installer: drizzleInstaller,
-	},
-	tailwind: {
-		inUse: packages.includes('tailwind'),
-		installer: tailwindInstallerTTS,
-	},
-	trpc: {
-		inUse: packages.includes('trpc'),
-		installer: trpcInstallerTTS,
-	},
-	dbContainer: {
-		inUse: ['postgres'].includes(databaseProvider),
-		installer: dbContainerInstaller,
-	},
-	biome: {
-		inUse: packages.includes('biome'),
-		installer: biomeInstaller,
-	},
-	graphql: {
-		inUse: packages.includes('graphql'),
-		installer: graphqlInstaller,
-	},
-})
-
-export const buildPkgInstallerMapDesktop = (
-	packages: AvailablePackages[],
-	databaseProvider: DatabaseProvider,
-): PkgInstallerMap => ({
-	fbtee: {
-		inUse: packages.includes('fbtee'),
-		installer: fbteeInstaller,
-	},
-	'better-auth': {
-		inUse: packages.includes('better-auth'),
-		installer: betterAuthInstallerDesktop,
-	},
-	drizzle: {
-		inUse: packages.includes('drizzle'),
-		installer: drizzleInstallerDesktop,
-	},
-	tailwind: {
-		inUse: packages.includes('tailwind'),
-		installer: tailwindInstallerDesktop,
-	},
-	trpc: {
-		inUse: packages.includes('trpc'),
-		installer: trpcInstallerDesktop,
+		installer: trpcInstaller,
 	},
 	dbContainer: {
 		inUse: ['postgres'].includes(databaseProvider),

@@ -55,7 +55,7 @@ export const fbteeInstallerDesktop: Installer = ({ projectDir, framework }) => {
 			'fbtee:prepare':
 				"node -e \"require('fs').mkdirSync('translations',{recursive:true});\" && $npm_execpath fbtee prepare-translations --locales es_ES -o translations",
 			'fbtee:translate':
-				'$npm_execpath fbtee translate --translations translations/*.json -o src/components/providers/locale/i18n',
+				'$npm_execpath fbtee translate --translations translations/*.json -o src/renderer/components/providers/locale/i18n',
 			'fbtee:all':
 				'$npm_execpath fbtee collect && $npm_execpath fbtee:prepare && $npm_execpath fbtee:translate',
 		},

@@ -1,27 +1,19 @@
 import path from 'node:path'
 import fs from 'fs-extra'
 
-import { extraDir, PROVIDERS_NAME } from '~/consts.js'
+import { BASE_ROOT, PROVIDERS_NAME } from '~/consts.js'
 import type { Installer } from '~/installers/index.js'
 import { addPackageDependency } from '~/utils/addPackageDependency.js'
 import { addPackageScript } from '~/utils/addPackageScript.js'
-
-const DEST = {
-	INDEX: 'src/server/db/entities/index.ts',
-	SCHEMA: 'src/server/db/entities/schemas.entity.ts',
-	AUTH: 'src/server/db/entities/auth.entity.ts',
-	CLIENT: 'src/server/db/index.ts',
-	CONFIG: 'drizzle.config.ts',
-	ENTITIES_DIR: 'src/server/db/entities',
-} as const
 
 export const drizzleInstaller: Installer = ({
 	projectDir,
 	packages,
 	scopedAppName,
 	databaseProvider,
-	framework,
 	projectName,
+	framework,
+	pgLite
 }) => {
 	addPackageDependency({
 		projectDir,
@@ -34,55 +26,13 @@ export const drizzleInstaller: Installer = ({
 			'drizzle-orm',
 			(
 				{
-					postgres: 'postgres',
+					postgres: pgLite ? '@electric-sql/pglite' : 'postgres',
 					sqlite: '@libsql/client',
 				} as const
 			)[databaseProvider],
 		],
 		devMode: false,
 	})
-
-	const extrasDir = extraDir(framework)
-
-	const CONFIG_CONTENT =
-		databaseProvider === 'sqlite' ? SQLITE_CONFIG_CONTENT : PG_CONFIG_CONTENT
-	const configDest = path.join(projectDir, DEST.CONFIG)
-
-	const entitiesDir = path.join(extrasDir, DEST.ENTITIES_DIR)
-
-	if (packages?.['better-auth']) {
-		switch (databaseProvider) {
-			case 'postgres': {
-				const schemaFile = path.join(entitiesDir, `with-pg-schema.ts`)
-				const schemaDest = path.join(projectDir, DEST.SCHEMA)
-				const authFile = path.join(entitiesDir, `with-pg-auth.ts`)
-				const authDest = path.join(projectDir, DEST.AUTH)
-				const ENV_CONTENT = `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/${projectName}`
-				const envPath = path.join(projectDir, '.env')
-
-				if (!fs.existsSync(envPath)) {
-					fs.writeFileSync(envPath, ENV_CONTENT)
-				}
-
-				fs.copySync(schemaFile, schemaDest)
-				fs.copySync(authFile, authDest)
-				break
-			}
-			case 'sqlite': {
-				const authFile = path.join(entitiesDir, `with-sqlite-auth.ts`)
-				const authDest = path.join(projectDir, DEST.AUTH)
-				fs.copySync(authFile, authDest)
-				break
-			}
-		}
-	}
-	const schemaFile = path.join(entitiesDir, `index.ts`)
-	const schemaDest = path.join(projectDir, DEST.INDEX)
-	const CLIENT_FILE = `src/server/db/${PROVIDERS_NAME[databaseProvider]}-index.ts`
-
-	const clientSrc = path.join(extrasDir, CLIENT_FILE)
-	const clientDest = path.join(projectDir, DEST.CLIENT)
-
 	addPackageScript({
 		projectDir,
 		scripts: {
@@ -92,132 +42,81 @@ export const drizzleInstaller: Installer = ({
 			'db:migrate': 'drizzle-kit migrate',
 		},
 	})
+	const WITH_AUTH = !!packages?.['better-auth']
 
-	fs.appendFileSync(configDest, CONFIG_CONTENT)
-	fs.mkdirSync(path.dirname(schemaDest), { recursive: true })
-	fs.copySync(schemaFile, schemaDest)
-	fs.copySync(clientSrc, clientDest)
+	const CONFIG_CONTENT = {
+		sqlite: SQLITE_CONFIG_CONTENT,
+		postgres: pgLite ? PG_LITE_CONFIG_CONTENT : PG_CONFIG_CONTENT,
+	}[databaseProvider]
 
-	// ENV file
-	const envDest = path.join(projectDir, 'src/lib/env.ts')
-	const dbName = scopedAppName.replace(/-/g, '_')
-	const envContent =
-		databaseProvider === 'sqlite' ? SQLITE_ENV_CONTENT : PG_ENV_CONTENT(dbName)
-	// Create empty env file to hydrate
-	fs.appendFileSync(envDest, envContent)
+	const DB_PATH = drizzlePaths(framework, PROVIDERS_NAME[databaseProvider], pgLite)
+	const copySrcDest: [string, string][] = []
+
+	copySrcDest.push([DB_PATH.CLIENT_FILE.SRC, path.join(projectDir, DB_PATH.CLIENT_FILE.DEST)])
+
+	if (WITH_AUTH) {
+		copySrcDest.push([DB_PATH.AUTH_FILE.SRC, path.join(projectDir, DB_PATH.AUTH_FILE.DEST)])
+		if (databaseProvider === 'postgres') {
+			copySrcDest.push([DB_PATH.SCHEMA_FILE.SRC, path.join(projectDir, DB_PATH.SCHEMA_FILE.DEST)])
+			const ENV_CONTENT = `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/${projectName}`
+			const envPath = path.join(projectDir, '.env')
+
+			if (!fs.existsSync(envPath)) {
+				fs.appendFileSync(envPath, ENV_CONTENT)
+			}
+		}
+	}
+
+	const ENV_CONTENT = {
+		sqlite: SQLITE_ENV_CONTENT,
+		postgres: pgLite ? PG_LITE_ENV_CONTENT : PG_ENV_CONTENT(scopedAppName.replace(/-/g, '_')),
+	}[databaseProvider]
+
+	fs.appendFileSync(path.join(projectDir, DB_PATH.CONFIG_FILE.DEST), CONFIG_CONTENT)
+	fs.writeFileSync(
+		path.join(projectDir, DB_PATH.ENV_FILE.DEST),
+		ENV_CONTENT,
+	)
+
+	copySrcDest.forEach(([src, dest]) => {
+		fs.copySync(src, dest)
+	})
 }
-export const drizzleInstallerDesktop: Installer = ({
-	projectDir,
-	packages,
-	scopedAppName,
-	databaseProvider,
-	framework,
-	projectName,
-}) => {
-	addPackageDependency({
-		projectDir,
-		dependencies: ['drizzle-kit'],
-		devMode: true,
-	})
-	addPackageDependency({
-		projectDir,
-		dependencies: [
-			'drizzle-orm',
-			(
-				{
-					postgres: 'postgres',
-					sqlite: '@libsql/client',
-				} as const
-			)[databaseProvider],
-		],
-		devMode: false,
-	})
 
-	const extrasDir = extraDir(framework)
+function drizzlePaths(framework: string, db: string, pgLite: boolean) {
+	const srcDir =
+		{
+			next: 'src',
+			'tanstack-star': 'src',
+			desktop: 'src/renderer',
+		}[framework] || 'src'
 
-	const CONFIG_CONTENT =
-		databaseProvider === 'sqlite'
-			? SQLITE_CONFIG_CONTENT.replaceAll('src/', 'src/renderer/')
-			: PG_CONFIG_CONTENT.replaceAll('src/', 'src/renderer/')
-	const configDest = path.join(projectDir, DEST.CONFIG)
-
-	const ENTITIES_DIR = path.join(
-		extrasDir,
-		DEST.ENTITIES_DIR.replace('src/', ''),
-	)
-
-	if (packages?.['better-auth']) {
-		switch (databaseProvider) {
-			case 'postgres': {
-				const schemaFile = path.join(ENTITIES_DIR, `with-pg-schema.ts`)
-				const schemaDest = path.join(
-					projectDir,
-					DEST.SCHEMA.replace('server/', 'renderer/server/'),
-				)
-				const authFile = path.join(ENTITIES_DIR, `with-pg-auth.ts`)
-				const authDest = path.join(
-					projectDir,
-					DEST.AUTH.replace('server/', 'renderer/server/'),
-				)
-				const ENV_CONTENT = `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/${projectName}`
-				const envPath = path.join(projectDir, '.env')
-
-				if (!fs.existsSync(envPath)) {
-					fs.writeFileSync(envPath, ENV_CONTENT)
-				}
-
-				fs.copySync(schemaFile, schemaDest)
-				fs.copySync(authFile, authDest)
-				break
-			}
-			case 'sqlite': {
-				const authFile = path.join(ENTITIES_DIR, `with-sqlite-auth.ts`)
-				const authDest = path.join(
-					projectDir,
-					DEST.AUTH.replace('server/', 'renderer/server/'),
-				)
-				fs.copySync(authFile, authDest)
-				break
-			}
-		}
-	}
-	const schemaFile = path.join(ENTITIES_DIR, `index.ts`)
-	const schemaDest = path.join(
-		projectDir,
-		DEST.INDEX.replace('server/', 'renderer/server/'),
-	)
-	const CLIENT_FILE = `server/db/${PROVIDERS_NAME[databaseProvider]}-index.ts`
-
-	const clientSrc = path.join(extrasDir, CLIENT_FILE)
-	const clientDest = path.join(
-		projectDir,
-		DEST.CLIENT.replace('server/', 'renderer/server/'),
-	)
-
-	addPackageScript({
-		projectDir,
-		scripts: {
-			'db:push': 'drizzle-kit push',
-			'db:studio': 'drizzle-kit studio',
-			'db:generate': 'drizzle-kit generate',
-			'db:migrate': 'drizzle-kit migrate',
+	const DB_PATHS = {
+		CLIENT_FILE: {
+			SRC: path.join(BASE_ROOT, `src/server/db/${db}-${pgLite ? 'lite-' : ''}index.ts`),
+			DEST: `${srcDir}/server/db/index.ts`,
 		},
-	})
+		CONFIG_FILE: {
+			DEST: 'drizzle.config.ts',
+		},
+		ENV_FILE: {
+			DEST: `${srcDir}/lib/env.ts`,
+		},
+		AUTH_FILE: {
+			SRC: path.join(BASE_ROOT, `src/server/db/entities/${db}-auth.ts`),
+			DEST: `${srcDir}/server/db/entities/auth.entity.ts`,
+		},
+		ENTITIES_DIR: {
+			SRC: path.join(BASE_ROOT, 'src/server/db/entities'),
+			DEST: `${srcDir}/server/db/entities`,
+		},
+		SCHEMA_FILE: {
+			SRC: path.join(BASE_ROOT, `src/server/db/entities/${db}-schema.ts`),
+			DEST: `${srcDir}/server/db/entities/schemas.entity.ts`,
+		},
+	}
 
-	fs.appendFileSync(configDest, CONFIG_CONTENT)
-	fs.mkdirSync(path.dirname(schemaDest), { recursive: true })
-	fs.copySync(schemaFile, schemaDest)
-	fs.copySync(clientSrc, clientDest)
-
-	// ENV file
-	const envDest = path.join(projectDir, 'src/renderer/lib/env.ts')
-	const dbName = scopedAppName.replace(/-/g, '_')
-	const ENV_CONTENT =
-		databaseProvider === 'sqlite'
-			? SQLITE_ENV_CONTENT.replaceAll('src/', 'src/renderer/')
-			: PG_ENV_CONTENT(dbName).replaceAll('src/', 'src/renderer/')
-	// Create empty env file to hydrate
-	fs.appendFileSync(envDest, ENV_CONTENT)
+	return DB_PATHS
 }
 
 const PG_ENV_CONTENT = (db: string) => `
@@ -281,4 +180,35 @@ export default defineConfig({
 	casing: 'snake_case',
 	schemaFilter: ['auth', 'core'],
 })
+`
+const PG_LITE_CONFIG_CONTENT = `
+import { env } from '~lib/env'
+import { defineConfig } from 'drizzle-kit'
+export default defineConfig({
+	dialect: 'postgresql',
+	driver: 'pglite',
+	schema: './src/server/db/entities/*.entity.ts',
+	out: './drizzle/migrations',
+	dbCredentials: {
+		url: env.DATABASE_URL,
+	},
+	strict: true,
+	verbose: true,
+	casing: 'snake_case',
+	schemaFilter: ['auth', 'core'],
+})
+`
+const PG_LITE_ENV_CONTENT = `
+import { z } from 'zod'
+
+export const env = z
+	.object({
+		NODE_ENV: z
+			.enum(['development', 'production', 'test'])
+			.default('development'),
+		DATABASE_URL: z.string().default('./src/server/db/dev.db'),
+		DB_AUTH_TOKEN: z.string().optional(),
+		AUTH_SECRET: z.string().default('SUPER_SECRET_KEY'),
+	})
+	.parse(process.env)
 `

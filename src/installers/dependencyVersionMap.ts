@@ -11,6 +11,7 @@ export const dependencyVersionMap = {
 	"drizzle-orm": "0.44.5",
 	postgres: "3.4.7",
 	"@libsql/client": "0.15.15",
+	"@electric-sql/pglite": "^0.3.11",
 
 	// TailwindCSS
 	tailwindcss: "4.1.13",

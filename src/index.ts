@@ -10,9 +10,7 @@ import { initializeGit } from "~/helpers/git.js";
 import { logNextSteps } from "~/helpers/logNextSteps.js";
 import { setImportAlias } from "~/helpers/setImportAlias.js";
 import {
-	buildPkgInstallerMapDesktop,
-	buildPkgInstallerMapNext,
-	buildPkgInstallerMapTTS,
+	buildPkgInstaller,
 } from "~/installers/index.js";
 import { getUserPkgManager } from "~/utils/getUserPkgManager.js";
 import { logger } from "~/utils/logger.js";
@@ -46,13 +44,10 @@ const main = async () => {
 		flags: { noGit, noInstall, importAlias, appRouter },
 		databaseProvider,
 		framework,
+		pgLite,
 	} = await runCli();
 
-	const usePackages = {
-		next: buildPkgInstallerMapNext(packages, databaseProvider),
-		'tanstack-star': buildPkgInstallerMapTTS(packages, databaseProvider),
-		desktop: buildPkgInstallerMapDesktop(packages, databaseProvider),
-	}[framework];
+	const usePackages = buildPkgInstaller(packages, databaseProvider);
 
 	if (!usePackages) {
 		logger.error(`Unsupported framework: ${framework}`);
@@ -71,6 +66,7 @@ const main = async () => {
 		framework,
 		noInstall,
 		appRouter,
+		pgLite,
 	});
 
 	// Write name to package.json

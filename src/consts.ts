@@ -9,6 +9,8 @@ export const PKG_ROOT = path.join(distPath, "../");
 export const CONFIG_ROOT = path.join(PKG_ROOT, "template/extras")
 export const extraDir = (framework: string) => path.join(CONFIG_ROOT, framework);
 
+export const BASE_ROOT = path.join(CONFIG_ROOT, "base");
+
 //export const PKG_ROOT = path.dirname(require.main.filename);
 
 export const TITLE_TEXT = `  ___ __  __ ____  _     ___  ____  _____ ____

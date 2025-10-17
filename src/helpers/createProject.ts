@@ -27,6 +27,7 @@ interface CreateProjectOptions {
 	appRouter: boolean;
 	framework: string;
 	databaseProvider: DatabaseProvider;
+	pgLite: boolean;
 }
 
 export const createProject = async ({
@@ -37,6 +38,7 @@ export const createProject = async ({
 	appRouter,
 	framework,
 	databaseProvider,
+	pgLite,
 }: CreateProjectOptions) => {
 	const pkgManager = getUserPkgManager();
 	const projectDir = path.resolve(process.cwd(), projectName);
@@ -51,6 +53,7 @@ export const createProject = async ({
 		appRouter,
 		databaseProvider,
 		framework,
+		pgLite,
 	});
 
 	// Install the selected packages
@@ -64,6 +67,7 @@ export const createProject = async ({
 		appRouter,
 		databaseProvider,
 		framework,
+		pgLite,
 	});
 
 	if (framework === "next") {
