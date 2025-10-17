@@ -51,7 +51,7 @@ function RootDocument() {
 				<HeadContent />
 			</head>
 			<body>
-				<div className="grid h-svh grid-rows-[auto_1fr]">
+				<div className="grid h-svh grid-rows-[auto_1fr] bg-[url(../assets/wavy-lines.svg)] bg-cover">
 					{isFetching ? <Loader /> : <Outlet />}
 				</div>
 				<Scripts />
