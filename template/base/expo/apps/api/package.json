@@ -1,0 +1,19 @@
+{
+	"name": "api",
+	"scripts": {
+		"dev": "bun run --hot src/index.ts",
+		"clean": "git clean -xdf .cache .turbo node_modules",
+		"typecheck": "tsc --noEmit",
+		"lint": "biome check --write --unsafe ."
+	},
+	"dependencies": {
+		"hono": "^4.9.12",
+		"@app/server": "*"
+	},
+	"devDependencies": {
+		"@app/ts-config": "*",
+		"@types/bun": "latest",
+		"@types/node": "^24.7.2",
+		"typescript": "catalog:"
+	}
+}

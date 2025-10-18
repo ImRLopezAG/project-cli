@@ -1,0 +1,4 @@
+{
+	"extends": "@app/ts-config/base.json",
+	"compilerOptions": {}
+}
