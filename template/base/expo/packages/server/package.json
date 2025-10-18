@@ -1,0 +1,41 @@
+{
+  "name": "@app/server",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo node_modules",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check --write --unsafe .",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "devDependencies": {
+    "@app/ts-config": "*",
+    "@types/bun": "latest",
+    "drizzle-kit": "^0.31.5",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@better-auth/expo": "catalog:better-auth",
+    "@electric-sql/pglite": "^0.3.11",
+    "@trpc/server": "catalog:trpc",
+    "better-auth": "catalog:better-auth",
+    "drizzle": "^1.4.0",
+    "drizzle-orm": "^0.44.6",
+    "drizzle-service": "^0.0.13",
+    "superjson": "catalog:",
+    "zod": "catalog:"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./trpc": "./src/trpc/index.ts",
+    "./trpc/*": "./src/trpc/*.ts",
+    "./lib": "./src/lib/index.ts",
+    "./lib/*": "./src/lib/*.ts",
+    "./auth": "./src/auth/index.ts",
+    "./db": "./src/db/index.ts"
+  }
+}

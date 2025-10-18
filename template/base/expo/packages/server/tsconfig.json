@@ -1,0 +1,10 @@
+{
+	"extends": "@app/ts-config/base.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"~/*": ["src/*"],
+			"~lib/*": ["src/lib/*"]
+		}
+	}
+}
